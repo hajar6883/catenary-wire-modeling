@@ -1,7 +1,7 @@
 from sklearn.decomposition import PCA
 from scipy.optimize import curve_fit
 import numpy as np
-from sklearn.cluster import DBSCAN
+
 
 
 def catenary(x, x0, y0, c):
@@ -76,16 +76,4 @@ def fit_catenary_to_cluster(points3d):
     return curve_3d, params
 
 
-
-def cluster_points_dbscan(points3d, eps=.765, min_samples=8, z_scale=1.0):
-    """
-    Cluster 3-D points with DBSCAN.
-    Optional z-scaling (helps when Z range is tiny vs X/Y).
-    Returns an array of cluster labels (-1 = noise).
-    (Default params defined are fine turned for the 'lidar_cable_points_easy' data points)
-    """
-    scaled = points3d.copy()
-    scaled[:, 2] *= z_scale
-    labels = DBSCAN(eps=eps, min_samples=min_samples).fit_predict(scaled)
-    return labels
 
