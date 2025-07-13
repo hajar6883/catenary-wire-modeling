@@ -4,9 +4,19 @@ import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.cluster import DBSCAN
 import hdbscan
+from scipy.optimize import curve_fit
 
 
-from .utils import project_to_2d, run_pca_projection, cluster_1d
+from .utils import (
+    select_axes_2d,
+    pca_project_clustering,
+    cluster_1d)
+
+from .models import (
+    catenary,               # for reuse if needed
+    fit_catenary_2d,        # fitting logic
+    fit_catenary_wire # full 3D workflow
+)
 from .presets import DBSCAN_PARAMS, HDBSCAN_PARAMS
 
 
@@ -24,8 +34,8 @@ def simple_clustering(points3d):
     Assumes wires are roughly on the same Z level.
     Projects to X-Y, applies PCA, then DBSCAN on PCA axis 2.
     """
-    points2d = project_to_2d(points3d, axes=[0, 1])  # X-Y projection
-    points2d = run_pca_projection(points2d)
+    points2d = select_axes_2d(points3d, axes=[0, 1])  # X-Y projection
+    points2d = pca_project_clustering(points2d)
     labels = cluster_1d(points2d[:, 1], **DBSCAN_PARAMS)
     return labels
 
@@ -37,7 +47,6 @@ def hierarchical_clustering(points3d):
         2. Inside each, run PCA + DBSCAN on orthogonal axis to split wires.
     """
 
-    # Step 1: Major group separation
     major_clusterer = hdbscan.HDBSCAN(**HDBSCAN_PARAMS)
     major_labels = major_clusterer.fit_predict(points3d[:, [1, 2]])  # Y-Z projection
 
@@ -51,8 +60,8 @@ def hierarchical_clustering(points3d):
         mask = major_labels == major_label
         cluster_points = points3d[mask]
 
-        points2d = project_to_2d(cluster_points, axes=[0, 1])
-        points2d = run_pca_projection(points2d)
+        points2d = select_axes_2d(cluster_points, axes=[0, 1])
+        points2d = pca_project_clustering(points2d)
         wire_labels = cluster_1d(points2d[:, 1], **DBSCAN_PARAMS)
 
         final_labels[mask] = wire_labels + wire_counter
@@ -70,3 +79,11 @@ def cluster_wires(points3d):
         return simple_clustering(points3d)
     else:
         return hierarchical_clustering(points3d)
+    
+
+
+
+
+
+def fit_all_wires(points3d, labels):
+    pass

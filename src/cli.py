@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 
+
 def load_cable_points(path):
     if path.endswith(".npy"):
         return np.load(path)
