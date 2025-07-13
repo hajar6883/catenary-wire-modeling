@@ -12,14 +12,18 @@ def catenary(x, x0, y0, c):
         return y0 + c * (np.cosh((x - x0) / c) - 1)
 
 
-def fit_catenary_2d(points_2d, n_fit_points=500):
+def fit_catenary_2d(points_2d, n_fit_points=500, p0=None):
    
     # Sort by x for stability
     sorted_idx = np.argsort(points_2d[:, 0])
     points_2d = points_2d[sorted_idx]
 
     x_data, y_data = points_2d[:, 0], points_2d[:, 1]
-    p0 = [np.mean(x_data), np.min(y_data), 1.0]
+    # Use default p0 if not provided
+    if p0 is None:
+        p0 = [np.mean(x_data), np.min(y_data), 1.0]
+
+
 
     try:
         params, _ = curve_fit(catenary, x_data, y_data, p0=p0)
@@ -43,11 +47,13 @@ def fit_catenary_wire(points3d):
     Returns (curve3d, params) or None on failure.
     """
     pts_2d, pca = pca_fit_plane(points3d)
+
     curve_2d, params = fit_catenary_2d(pts_2d)
 
     if curve_2d is None:
         return None
 
-    curve_3d = pca_back_project(curve_2d, pca)
-    return curve_3d, params
+    reconstructed_curve_3d = pca_back_project(curve_2d, pca)
+    
+    return reconstructed_curve_3d, params
 

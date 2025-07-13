@@ -1,12 +1,14 @@
 import argparse
 import numpy as np
 import pandas as pd
-import plotly.express as px
+
 from src.core import cluster_wires
+from src.models import fit_catenary_wire
 import os 
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib import cm
+
+from src.visualization import plot_all_wires_plotly,  plot_clusters_plotly
+
+
 
 
 def load_cable_points(path):
@@ -20,82 +22,77 @@ def load_cable_points(path):
         df = pd.read_csv(path)
         return df.values
     
-    
     else:
         raise ValueError("Unsupported file format. Use .npy, .csv, or .parquet")
 
 
-# def plot_clusters(points3d, labels=None):
-    
-#     df = pd.DataFrame(points3d, columns=["x", "y", "z"])
-
-#     if labels is not None:
-#         df["label"] = labels.astype(str)
-#         fig = px.scatter_3d(df, x="x", y="y", z="z", color="label",
-#                             title="Clustered Wires (3D View)", opacity=0.7)
-#     else:
-#         fig = px.scatter_3d(df, x="x", y="y", z="z",
-#                             title="Raw Point Cloud (3D View)", opacity=0.7)
-
-#     fig.show()
 
 
 
-def plot_clusters(points3d, labels=None):
-    fig = plt.figure(figsize=(10, 8))
-    ax = fig.add_subplot(111, projection="3d")
-    ax.set_facecolor("#f8f9fa")  # light background
-    fig.patch.set_facecolor("#f8f9fa")
 
-    x, y, z = points3d[:, 0], points3d[:, 1], points3d[:, 2]
-
-    if labels is not None:
-        labels = labels.astype(str)
-        unique_labels = np.unique(labels)
-        cmap = plt.get_cmap("tab10")  # You can try "Set2", "viridis", etc.
-
-        for i, lbl in enumerate(unique_labels):
-            mask = labels == lbl
-            ax.scatter(
-                x[mask], y[mask], z[mask],
-                label=f"Cluster {lbl}",
-                s=10,  # marker size
-                alpha=0.7,
-                color=cmap(i % 10)
-            )
-        ax.legend(loc="upper right")
-        ax.set_title("Clustered Wires (3D View)", fontsize=14)
-    else:
-        ax.scatter(x, y, z, s=10, alpha=0.7, color="dodgerblue")
-        ax.set_title("Raw Point Cloud (3D View)", fontsize=14)
-
-    ax.set_xlabel("X", fontsize=12)
-    ax.set_ylabel("Y", fontsize=12)
-    ax.set_zlabel("Z", fontsize=12)
-
-    plt.tight_layout()
-    plt.show()
 
 
 
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Wire clustering CLI tool")
+    parser = argparse.ArgumentParser(description="Wire modeling CLI")
     parser.add_argument("--input", required=True, help="Path to .npy, .csv or .parquet file with 3D points")
-    parser.add_argument("--plot", action="store_true", help="Visualize 3D clusters after running")
-
+    parser.add_argument("--cluster", action="store_true", help="Cluster and visualize segmented wires")
+    parser.add_argument("--fit", action="store_true", help="Fit catenary curves on each clustered wire and optionally plot 3D fits")
+    parser.add_argument("--plot", action="store_true", help="Enable visualization for either clustering or fitting")
     args = parser.parse_args()
-    
+
+    # Resolve input path
     data_path = os.path.join("data", args.input) if not os.path.exists(args.input) else args.input
-
     points3d = load_cable_points(data_path)
-    labels = cluster_wires(points3d)
 
-    print("Clustering complete. Unique labels:", np.unique(labels))
+    # Run clustering 
+    if args.cluster or args.fit:
+        labels = cluster_wires(points3d)
+        print("Clustering complete. Unique labels:", np.unique(labels))
 
-    if args.plot:
-        plot_clusters(points3d, labels)
+    # -- Case 1: Only clustering visualization --
+    if args.cluster and not args.fit:
+        if args.plot:
+            plot_clusters_plotly(points3d, labels)
+        else:
+            print("Clustering done. Use --plot to visualize.")
+
+    # -- Case 2: Fitting (always includes clustering first) --
+    if args.fit:
+        
+        fits_to_plot = []
+
+        for wire_id in sorted(set(labels)):
+            if wire_id == -1:
+                continue
+
+            wire_points = points3d[labels == wire_id]
+            result = fit_catenary_wire(wire_points)
+
+            if result is None:
+                print(f"[!] Wire {wire_id}: Fit failed.")
+                continue
+
+            curve3d, params = result
+            x0, y0, c = params
+            print(f"[✓] Wire {wire_id}: x0={x0:.2f}, y0={y0:.2f}, c={c:.2f}")
+
+            if args.plot:
+                fits_to_plot.append((wire_id, wire_points, curve3d))
+
+        # After the loop
+        if args.plot and fits_to_plot:
+            # plot_fitted_wires_all(fits_to_plot)
+            plot_all_wires_plotly(fits_to_plot)
+
+        
+
+    # -- Case 3: Neither clustering nor fitting
+    if not args.cluster and not args.fit:
+        print("Nothing to do. Use --cluster and/or --fit.")
+
 
 
 if __name__ == "__main__":

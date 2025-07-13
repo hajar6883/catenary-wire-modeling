@@ -71,10 +71,18 @@ def hierarchical_clustering(points3d):
 
 
 
-def cluster_wires(points3d):
+def cluster_wires(points3d: np.ndarray) -> np.ndarray:
     """
     Main interface: determines wire structure and applies appropriate clustering pipeline.
+    Requires: NumPy array of shape (N, 3), where columns are [x, y, z].
     """
+    if not isinstance(points3d, np.ndarray):
+        raise TypeError("Input must be a NumPy array (use .values if DataFrame)")
+
+    if points3d.ndim != 2 or points3d.shape[1] != 3:
+        raise ValueError(f"Expected shape (N, 3), got {points3d.shape}")
+
+    # Route to clustering
     if is_flat_z(points3d):
         return simple_clustering(points3d)
     else:
@@ -82,8 +90,3 @@ def cluster_wires(points3d):
     
 
 
-
-
-
-def fit_all_wires(points3d, labels):
-    pass
