@@ -6,7 +6,6 @@ import os
 from src.wire_segmentation import cluster_wires
 from src.catenary_models import fit_all_wires , fit_catenary_wire
 
-
 from src.visualization import plot_all_wires_plotly,  plot_clusters_plotly
 
 

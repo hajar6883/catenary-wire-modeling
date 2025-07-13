@@ -1,10 +1,8 @@
 # core.py
 
 import numpy as np
-from sklearn.decomposition import PCA
-from sklearn.cluster import DBSCAN
 import hdbscan
-from scipy.optimize import curve_fit
+
 
 
 from .utils import (
@@ -12,11 +10,8 @@ from .utils import (
     pca_project_clustering,
     cluster_1d)
 
-from .catenary_models import (
-    catenary,               # for reuse if needed
-    fit_catenary_2d,        # fitting logic
-    fit_catenary_wire # full 3D workflow
-)
+
+
 from .presets import DBSCAN_PARAMS, HDBSCAN_PARAMS
 
 
