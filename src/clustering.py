@@ -1,18 +1,34 @@
 from sklearn.cluster import DBSCAN
+import hdbscan
 import plotly.graph_objects as go
 import plotly.express as px
 import numpy as np
 
-def cluster_points_dbscan(points3d, eps=.765, min_samples=8, z_scale=1.0):
+def cluster_points_dbscan(points3d, eps=.5, min_samples=5, z_scale=1.0):
     """
     Cluster 3-D points with DBSCAN.
     Optional z-scaling (helps when Z range is tiny vs X/Y).
     Returns an array of cluster labels (-1 = noise).
-    (Default params defined are fine turned for the 'lidar_cable_points_easy' data points)
+    (Default params defined are fine turned for the 'lidar_cable_points_easy' data points eps=.765, min_samples=8)
     """
     scaled = points3d.copy()
     scaled[:, 2] *= z_scale
     labels = DBSCAN(eps=eps, min_samples=min_samples).fit_predict(scaled)
+    return labels
+
+
+
+def cluster_points_hdbscan(points3d, min_cluster_size=5, z_scale=1.0):
+    """
+    Cluster 3-D points using HDBSCAN.
+    Optional z-scaling to normalize Z vs X/Y if Z has smaller range.
+    Returns an array of cluster labels (-1 = noise).
+    """
+    scaled = points3d.copy()
+    scaled[:, 2] *= z_scale
+
+    clusterer = hdbscan.HDBSCAN(min_cluster_size=min_cluster_size)
+    labels = clusterer.fit_predict(scaled)
     return labels
 
 
