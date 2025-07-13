@@ -69,10 +69,24 @@ This helps power grid operators visualize and analyze the geometry of suspended 
 
 ## How to Run
 
+Your main CLI script is located in `src/cli.py`. You can run it from the root directory as follows:
+
+&rarr; This performs wire clustering on the input file:
 ```bash
-python cli.py --input <path-to-lidar-parquet-file>
+python src/cli.py --input data/lidar_cable_points_easy.parquet --cluster
 ```
 
+&rarr;This clusters and fits 2D catenary curves to each wire using PCA projection:
+
+```bash
+python src/cli.py --input data/lidar_cable_points_01.parquet --fit
+```
+
+&rarr;This runs the full pipeline (clustering + curve fitting) and generates interactive Plotly visualizations.
+
+```bash
+python src/cli.py --input data/lidar_cable_points_01.parquet --cluster --fit --plot
+```
 You can customize clustering and fitting parameters inside `presets.py`.
 
 ---
@@ -125,7 +139,7 @@ After clustering, each group of wire points is fitted with a 3D catenary curve t
 
 2. **2D Catenary Fit**  
    The catenary equation  
-   $$
+    $$
     y(x) = y_0 + c \cdot \left( \cosh\left(\frac{x - x_0}{c}\right) - 1 \right)
     $$ 
    is fitted using non-linear least squares (`curve_fit`), estimating \( x_0 \), \( y_0 \), and \( c \).
