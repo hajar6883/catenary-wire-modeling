@@ -125,9 +125,9 @@ After clustering, each group of wire points is fitted with a 3D catenary curve t
 
 2. **2D Catenary Fit**  
    The catenary equation  
-   \[
-   y(x) = y_0 + c \cdot \left( \cosh\left(\frac{x - x_0}{c}\right) - 1 \right)
-   \]  
+   $$
+    y(x) = y_0 + c \cdot \left( \cosh\left(\frac{x - x_0}{c}\right) - 1 \right)
+    $$ 
    is fitted using non-linear least squares (`curve_fit`), estimating \( x_0 \), \( y_0 \), and \( c \).
 
 3. **Back-Projection to 3D**  
