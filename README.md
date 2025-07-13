@@ -79,13 +79,13 @@ python src/cli.py --input data/lidar_cable_points_easy.parquet --cluster
 &rarr;This clusters and fits 2D catenary curves to each wire using PCA projection:
 
 ```bash
-python src/cli.py --input data/lidar_cable_points_01.parquet --fit
+python src/cli.py --input data/lidar_cable_points_easy.parquet --fit
 ```
 
 &rarr;This runs the full pipeline (clustering + curve fitting) and generates interactive Plotly visualizations.
 
 ```bash
-python src/cli.py --input data/lidar_cable_points_01.parquet --cluster --fit --plot
+python src/cli.py --input data/lidar_cable_points_easy.parquet --cluster --fit --plot
 ```
 You can customize clustering and fitting parameters inside `presets.py`.
 
@@ -93,11 +93,11 @@ You can customize clustering and fitting parameters inside `presets.py`.
 
 ## Proposed Approach
 
-### 1. Clustering
+### 1. Cloud Points Segmentation
 
 The final pipeline is designed to generalize across all datasets by dynamically selecting the appropriate strategy for segmenting wires based on their spatial arrangement.
 
-#### Flat Wire Configurations (Easy, Hard, Extra Hard)
+#### Flat Wire Configurations (Easy, Hard, Extra Hard datasets)
 
 In these cases, wires are approximately aligned along the same Z level — with minimal vertical stacking. The pipeline uses:
 
@@ -111,7 +111,7 @@ In these cases, wires are approximately aligned along the same Z level — with 
   Clustering is then performed along the second PCA axis, which typically separates the parallel wires vertically.  
   This method is both efficient and effective for scenes where wires do not overlap in height.
 
-#### Vertically Stacked / Diagonal Wires (Medium)
+#### Vertically Stacked / Diagonal Wires (Medium dataset)
 
 In more complex datasets, wires may be stacked vertically or oriented diagonally, where axis-aligned projection is insufficient.
 
