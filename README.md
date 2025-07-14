@@ -1,11 +1,6 @@
-# catenary-wire-modeling
+# LiDAR Wire Detection and Catenary Modeling
 A Python package to detect and model overhead electrical wires from LiDAR point cloud data. 
 
-RMSE was estimated by computing nearest-point distances between the original 3D wire points and a dense sample of the fitted catenary curve.
-
-
-
-# LiDAR Wire Detection and Catenary Modeling
 
 This project addresses a data science task, involving the detection and modeling of overhead electricity wires using drone-based LiDAR point cloud data. The goal is to fit 3D catenary curves to individual wires within a point cloud.
 
@@ -148,7 +143,7 @@ After clustering, each group of wire points is fitted with a 3D catenary curve t
    The fitted curve is transformed back into 3D using the inverse PCA transform, restoring real-world orientation.
 
 4. **Fit Quality (RMSE)**  
-   A KD-tree is used to compute the RMSE between original points and the fitted curve, assessing fit accuracy.
+   A KD-tree is used to compute the RMSE between original points and the fitted curve, assessing fit accuracy. 
 
 5. **Batch Processing**  
    All wires are processed in a loop. Invalid or poor fits are skipped with optional logging of parameters and RMSE.
